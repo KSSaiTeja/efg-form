@@ -83,12 +83,14 @@ interface SavartOneProps {
   isLoading: boolean;
   initialData?: any;
   isRequired: boolean;
-} 
+}
 
 export default function SavartOne({
   onSubmit,
+  onPrevious,
   isLoading,
   initialData,
+  isRequired,
 }: SavartOneProps) {
   const {
     register,
@@ -887,9 +889,14 @@ export default function SavartOne({
         </CardContent>
       </Card>
 
-      <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? "Submitting..." : "Submit"}
-      </Button>
+      <div className="flex justify-between">
+        <Button type="button" onClick={onPrevious} variant="outline">
+          Previous
+        </Button>
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? "Submitting..." : "Submit"}
+        </Button>
+      </div>
     </form>
   );
 }
