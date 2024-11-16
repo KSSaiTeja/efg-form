@@ -69,7 +69,7 @@ export default function PersonalProfile({
     register,
     handleSubmit,
     control,
-    formState: { errors, isDirty, isValid },
+    formState: { isValid },
     trigger,
   } = useForm<PersonalProfileFormData>({
     defaultValues: initialData,
@@ -93,18 +93,10 @@ export default function PersonalProfile({
               <Input
                 id="mobileNumber"
                 {...register("mobileNumber", {
-                  required: "Mobile number is required",
-                  pattern: {
-                    value: /^[0-9]{10}$/,
-                    message: "Please enter a valid 10-digit mobile number",
-                  },
+                  required: true,
+                  pattern: /^[0-9]{10}$/,
                 })}
               />
-              {errors.mobileNumber && (
-                <span className="text-red-500 text-sm">
-                  {errors.mobileNumber.message}
-                </span>
-              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email ID</Label>
@@ -112,18 +104,10 @@ export default function PersonalProfile({
                 id="email"
                 type="email"
                 {...register("email", {
-                  required: "Email is required",
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: "Please enter a valid email address",
-                  },
+                  required: true,
+                  pattern: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                 })}
               />
-              {errors.email && (
-                <span className="text-red-500 text-sm">
-                  {errors.email.message}
-                </span>
-              )}
             </div>
           </div>
 
@@ -132,27 +116,15 @@ export default function PersonalProfile({
               <Label htmlFor="firstName">First Name</Label>
               <Input
                 id="firstName"
-                {...register("firstName", {
-                  required: "First name is required",
-                })}
+                {...register("firstName", { required: true })}
               />
-              {errors.firstName && (
-                <span className="text-red-500 text-sm">
-                  {errors.firstName.message}
-                </span>
-              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="lastName">Last Name</Label>
               <Input
                 id="lastName"
-                {...register("lastName", { required: "Last name is required" })}
+                {...register("lastName", { required: true })}
               />
-              {errors.lastName && (
-                <span className="text-red-500 text-sm">
-                  {errors.lastName.message}
-                </span>
-              )}
             </div>
           </div>
 
@@ -161,7 +133,7 @@ export default function PersonalProfile({
             <Controller
               name="age"
               control={control}
-              rules={{ required: "Age is required" }}
+              rules={{ required: true }}
               render={({ field }) => (
                 <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger id="age">
@@ -177,22 +149,11 @@ export default function PersonalProfile({
                 </Select>
               )}
             />
-            {errors.age && (
-              <span className="text-red-500 text-sm">{errors.age.message}</span>
-            )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="address">Address</Label>
-            <Input
-              id="address"
-              {...register("address", { required: "Address is required" })}
-            />
-            {errors.address && (
-              <span className="text-red-500 text-sm">
-                {errors.address.message}
-              </span>
-            )}
+            <Input id="address" {...register("address", { required: true })} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -201,57 +162,28 @@ export default function PersonalProfile({
               <Input
                 id="pinCode"
                 {...register("pinCode", {
-                  required: "PIN code is required",
-                  pattern: {
-                    value: /^[0-9]{6}$/,
-                    message: "Please enter a valid 6-digit PIN code",
-                  },
+                  required: true,
+                  pattern: /^[0-9]{6}$/,
                 })}
               />
-              {errors.pinCode && (
-                <span className="text-red-500 text-sm">
-                  {errors.pinCode.message}
-                </span>
-              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="city">City</Label>
-              <Input
-                id="city"
-                {...register("city", { required: "City is required" })}
-              />
-              {errors.city && (
-                <span className="text-red-500 text-sm">
-                  {errors.city.message}
-                </span>
-              )}
+              <Input id="city" {...register("city", { required: true })} />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="state">State</Label>
-              <Input
-                id="state"
-                {...register("state", { required: "State is required" })}
-              />
-              {errors.state && (
-                <span className="text-red-500 text-sm">
-                  {errors.state.message}
-                </span>
-              )}
+              <Input id="state" {...register("state", { required: true })} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="country">Country</Label>
               <Input
                 id="country"
-                {...register("country", { required: "Country is required" })}
+                {...register("country", { required: true })}
               />
-              {errors.country && (
-                <span className="text-red-500 text-sm">
-                  {errors.country.message}
-                </span>
-              )}
             </div>
           </div>
 
@@ -260,33 +192,18 @@ export default function PersonalProfile({
             <Input
               id="panNumber"
               {...register("panNumber", {
-                required: "PAN number is required",
-                pattern: {
-                  value: /^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$/,
-                  message: "Please enter a valid PAN number",
-                },
+                required: true,
+                pattern: /^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$/,
               })}
             />
-            {errors.panNumber && (
-              <span className="text-red-500 text-sm">
-                {errors.panNumber.message}
-              </span>
-            )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="citizenship">Citizenship</Label>
             <Input
               id="citizenship"
-              {...register("citizenship", {
-                required: "Citizenship is required",
-              })}
+              {...register("citizenship", { required: true })}
             />
-            {errors.citizenship && (
-              <span className="text-red-500 text-sm">
-                {errors.citizenship.message}
-              </span>
-            )}
           </div>
 
           <div className="space-y-2">
@@ -294,7 +211,7 @@ export default function PersonalProfile({
             <Controller
               name="gender"
               control={control}
-              rules={{ required: "Gender is required" }}
+              rules={{ required: true }}
               render={({ field }) => (
                 <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger id="gender">
@@ -308,11 +225,6 @@ export default function PersonalProfile({
                 </Select>
               )}
             />
-            {errors.gender && (
-              <span className="text-red-500 text-sm">
-                {errors.gender.message}
-              </span>
-            )}
           </div>
 
           <div className="space-y-2">
@@ -320,7 +232,7 @@ export default function PersonalProfile({
             <Controller
               name="occupation"
               control={control}
-              rules={{ required: "Occupation is required" }}
+              rules={{ required: true }}
               render={({ field }) => (
                 <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger id="occupation">
@@ -344,11 +256,6 @@ export default function PersonalProfile({
                 </Select>
               )}
             />
-            {errors.occupation && (
-              <span className="text-red-500 text-sm">
-                {errors.occupation.message}
-              </span>
-            )}
           </div>
 
           <div className="space-y-2">
@@ -358,7 +265,7 @@ export default function PersonalProfile({
             <Controller
               name="preferredLanguage"
               control={control}
-              rules={{ required: "Preferred language is required" }}
+              rules={{ required: true }}
               render={({ field }) => (
                 <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger id="preferredLanguage">
@@ -376,11 +283,6 @@ export default function PersonalProfile({
                 </Select>
               )}
             />
-            {errors.preferredLanguage && (
-              <span className="text-red-500 text-sm">
-                {errors.preferredLanguage.message}
-              </span>
-            )}
           </div>
 
           <div className="space-y-2">
@@ -388,7 +290,7 @@ export default function PersonalProfile({
             <Controller
               name="maritalStatus"
               control={control}
-              rules={{ required: "Marital status is required" }}
+              rules={{ required: true }}
               render={({ field }) => (
                 <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger id="maritalStatus">
@@ -404,22 +306,9 @@ export default function PersonalProfile({
                 </Select>
               )}
             />
-            {errors.maritalStatus && (
-              <span className="text-red-500 text-sm">
-                {errors.maritalStatus.message}
-              </span>
-            )}
           </div>
 
           <div className="flex justify-between">
-            {/* <Button
-              type="button"
-              onClick={onPrevious}
-              variant="outline"
-              disabled={isLoading}
-            >
-              Previous
-            </Button> */}
             <Button
               type="submit"
               disabled={isLoading || !isValid}
