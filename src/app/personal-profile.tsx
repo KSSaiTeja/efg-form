@@ -51,10 +51,10 @@ interface PersonalProfileFormData {
 }
 
 interface PersonalProfileProps {
-  onSubmit: (data: any) => void;
+  onSubmit: (data: PersonalProfileFormData) => void;
   onPrevious: () => void;
   isLoading: boolean;
-  initialData?: any;
+  initialData?: Partial<PersonalProfileFormData>;
   isRequired: boolean;
 }
 
@@ -69,16 +69,18 @@ export default function PersonalProfile({
     register,
     handleSubmit,
     control,
-    formState: { isValid },
-    trigger,
+    formState: { errors, isDirty, dirtyFields },
+    watch,
   } = useForm<PersonalProfileFormData>({
     defaultValues: initialData,
     mode: "onChange",
   });
 
-  useEffect(() => {
-    trigger();
-  }, [trigger]);
+  // Watch all fields to check if form is complete
+  const allFields = watch();
+  const isFormComplete = Object.values(allFields).every(
+    (value) => value !== undefined && value !== "",
+  );
 
   return (
     <Card className="w-full max-w-2xl">
@@ -94,9 +96,18 @@ export default function PersonalProfile({
                 id="mobileNumber"
                 {...register("mobileNumber", {
                   required: true,
-                  pattern: /^[0-9]{10}$/,
+                  pattern: {
+                    value: /^[0-9]{10}$/,
+                    message: "Please enter a valid 10-digit mobile number",
+                  },
                 })}
               />
+              {dirtyFields.mobileNumber &&
+                errors.mobileNumber?.type === "pattern" && (
+                  <span className="text-red-500 text-sm">
+                    Please enter a valid 10-digit mobile number
+                  </span>
+                )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email ID</Label>
@@ -105,9 +116,17 @@ export default function PersonalProfile({
                 type="email"
                 {...register("email", {
                   required: true,
-                  pattern: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: "Please enter a valid email address",
+                  },
                 })}
               />
+              {dirtyFields.email && errors.email?.type === "pattern" && (
+                <span className="text-red-500 text-sm">
+                  Please enter a valid email address
+                </span>
+              )}
             </div>
           </div>
 
@@ -163,9 +182,17 @@ export default function PersonalProfile({
                 id="pinCode"
                 {...register("pinCode", {
                   required: true,
-                  pattern: /^[0-9]{6}$/,
+                  pattern: {
+                    value: /^[0-9]{6}$/,
+                    message: "Please enter a valid 6-digit PIN code",
+                  },
                 })}
               />
+              {dirtyFields.pinCode && errors.pinCode?.type === "pattern" && (
+                <span className="text-red-500 text-sm">
+                  Please enter a valid 6-digit PIN code
+                </span>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="city">City</Label>
@@ -193,9 +220,17 @@ export default function PersonalProfile({
               id="panNumber"
               {...register("panNumber", {
                 required: true,
-                pattern: /^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$/,
+                pattern: {
+                  value: /^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$/,
+                  message: "Please enter a valid PAN number",
+                },
               })}
             />
+            {dirtyFields.panNumber && errors.panNumber?.type === "pattern" && (
+              <span className="text-red-500 text-sm">
+                Please enter a valid PAN number
+              </span>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -311,7 +346,7 @@ export default function PersonalProfile({
           <div className="flex justify-between">
             <Button
               type="submit"
-              disabled={isLoading || !isValid}
+              disabled={isLoading || !isFormComplete}
               className="ml-auto"
             >
               {isLoading ? "Submitting..." : "Next"}
