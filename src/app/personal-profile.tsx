@@ -1,6 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
+import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,23 +52,33 @@ interface PersonalProfileFormData {
 
 interface PersonalProfileProps {
   onSubmit: (data: any) => void;
+  onPrevious: () => void;
   isLoading: boolean;
   initialData?: any;
+  isRequired: boolean;
 }
 
 export default function PersonalProfile({
   onSubmit,
+  onPrevious,
   isLoading,
   initialData,
+  isRequired,
 }: PersonalProfileProps) {
   const {
     register,
     handleSubmit,
     control,
-    formState: { errors },
+    formState: { errors, isDirty, isValid },
+    trigger,
   } = useForm<PersonalProfileFormData>({
     defaultValues: initialData,
+    mode: "onChange",
   });
+
+  useEffect(() => {
+    trigger();
+  }, [trigger]);
 
   return (
     <Card className="w-full max-w-2xl">
@@ -150,10 +163,7 @@ export default function PersonalProfile({
               control={control}
               rules={{ required: "Age is required" }}
               render={({ field }) => (
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger id="age">
                     <SelectValue placeholder="Select age range" />
                   </SelectTrigger>
@@ -252,7 +262,7 @@ export default function PersonalProfile({
               {...register("panNumber", {
                 required: "PAN number is required",
                 pattern: {
-                  value: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
+                  value: /^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$/,
                   message: "Please enter a valid PAN number",
                 },
               })}
@@ -286,10 +296,7 @@ export default function PersonalProfile({
               control={control}
               rules={{ required: "Gender is required" }}
               render={({ field }) => (
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger id="gender">
                     <SelectValue placeholder="Select gender" />
                   </SelectTrigger>
@@ -315,10 +322,7 @@ export default function PersonalProfile({
               control={control}
               rules={{ required: "Occupation is required" }}
               render={({ field }) => (
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger id="occupation">
                     <SelectValue placeholder="Select occupation" />
                   </SelectTrigger>
@@ -356,10 +360,7 @@ export default function PersonalProfile({
               control={control}
               rules={{ required: "Preferred language is required" }}
               render={({ field }) => (
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger id="preferredLanguage">
                     <SelectValue placeholder="Select language" />
                   </SelectTrigger>
@@ -389,10 +390,7 @@ export default function PersonalProfile({
               control={control}
               rules={{ required: "Marital status is required" }}
               render={({ field }) => (
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger id="maritalStatus">
                     <SelectValue placeholder="Select marital status" />
                   </SelectTrigger>
@@ -413,9 +411,23 @@ export default function PersonalProfile({
             )}
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Saving..." : "Save and Continue"}
-          </Button>
+          <div className="flex justify-between">
+            {/* <Button
+              type="button"
+              onClick={onPrevious}
+              variant="outline"
+              disabled={isLoading}
+            >
+              Previous
+            </Button> */}
+            <Button
+              type="submit"
+              disabled={isLoading || !isValid}
+              className="ml-auto"
+            >
+              {isLoading ? "Submitting..." : "Next"}
+            </Button>
+          </div>
         </form>
       </CardContent>
     </Card>

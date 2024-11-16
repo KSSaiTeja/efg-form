@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -34,22 +36,32 @@ interface InvestmentProfileFormData {
 
 interface InvestmentProfileProps {
   onSubmit: (data: any) => void;
+  onPrevious: () => void;
   isLoading: boolean;
   initialData?: any;
+  isRequired: boolean;
 }
 
 export default function InvestmentProfile({
   onSubmit,
+  onPrevious,
   isLoading,
   initialData,
 }: InvestmentProfileProps) {
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid },
+    trigger,
   } = useForm<InvestmentProfileFormData>({
     defaultValues: initialData,
+    mode: "onChange",
   });
+
+  useEffect(() => {
+    // Trigger validation when component mounts or when initialData changes
+    trigger();
+  }, [trigger, initialData]);
 
   return (
     <form
@@ -68,10 +80,7 @@ export default function InvestmentProfile({
               control={control}
               rules={{ required: "Investment horizon is required" }}
               render={({ field }) => (
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger id="investmentHorizon">
                     <SelectValue placeholder="Select investment horizon" />
                   </SelectTrigger>
@@ -99,10 +108,7 @@ export default function InvestmentProfile({
               control={control}
               rules={{ required: "Investment reason is required" }}
               render={({ field }) => (
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger id="investmentReason">
                     <SelectValue placeholder="Select investment reason" />
                   </SelectTrigger>
@@ -141,10 +147,7 @@ export default function InvestmentProfile({
               control={control}
               rules={{ required: "Expected return is required" }}
               render={({ field }) => (
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger id="expectedReturn">
                     <SelectValue placeholder="Select expected return" />
                   </SelectTrigger>
@@ -174,10 +177,7 @@ export default function InvestmentProfile({
               control={control}
               rules={{ required: "Investment experience is required" }}
               render={({ field }) => (
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger id="investmentExperience">
                     <SelectValue placeholder="Select investment experience" />
                   </SelectTrigger>
@@ -212,10 +212,7 @@ export default function InvestmentProfile({
               control={control}
               rules={{ required: "Risk tolerance is required" }}
               render={({ field }) => (
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger id="riskTolerance">
                     <SelectValue placeholder="Select risk tolerance" />
                   </SelectTrigger>
@@ -251,10 +248,7 @@ export default function InvestmentProfile({
               control={control}
               rules={{ required: "Market downturn reaction is required" }}
               render={({ field }) => (
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger id="marketDownturnReaction">
                     <SelectValue placeholder="Select reaction" />
                   </SelectTrigger>
@@ -290,10 +284,7 @@ export default function InvestmentProfile({
               control={control}
               rules={{ required: "Investment preference is required" }}
               render={({ field }) => (
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger id="investmentPreference">
                     <SelectValue placeholder="Select preference" />
                   </SelectTrigger>
@@ -314,9 +305,23 @@ export default function InvestmentProfile({
         </CardContent>
       </Card>
 
-      <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? "Saving..." : "Save and Continue"}
-      </Button>
+      <div className="flex justify-between">
+        <Button
+          type="button"
+          onClick={onPrevious}
+          variant="outline"
+          disabled={isLoading}
+        >
+          Previous
+        </Button>
+        <Button
+          type="submit"
+          disabled={isLoading || !isValid}
+          className="ml-auto"
+        >
+          {isLoading ? "Submitting..." : "Next"}
+        </Button>
+      </div>
     </form>
   );
 }

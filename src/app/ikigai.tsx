@@ -1,6 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
+import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,138 +15,180 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+// Define the structure for the form data
+interface IkigaiFormData {
+  activity: string;
+  marketPotential: "high" | "medium" | "low";
+  skillLevel: "expert" | "intermediate" | "beginner";
+  payPotential: "high" | "medium" | "low";
+}
+
+// Define the props for the Ikigai component
 interface IkigaiProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSubmit: (data: any) => void;
+  onPrevious: () => void;
   isLoading: boolean;
   initialData?: any;
+  isRequired: boolean;
 }
 
 export default function Ikigai({
   onSubmit,
+  onPrevious,
   isLoading,
   initialData,
 }: IkigaiProps) {
+  // Initialize the form with react-hook-form
   const {
     register,
-    handleSubmit,
     control,
-    formState: { errors },
-  } = useForm({ defaultValues: initialData });
+    handleSubmit,
+    formState: { errors, isDirty, isValid },
+    trigger,
+  } = useForm<IkigaiFormData>({
+    defaultValues: initialData,
+    mode: "onChange",
+  });
+
+  useEffect(() => {
+    // Trigger validation when component mounts or when initialData changes
+    trigger();
+  }, [trigger, initialData]);
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
       className="space-y-6 w-full max-w-2xl"
     >
-      <div>
-        <Label htmlFor="activity">
-          What is the activity that you love doing the most in life?
-        </Label>
-        <Input
-          id="activity"
-          {...register("activity", { required: true, maxLength: 50 })}
-          placeholder="Short text input with maximum three words"
-        />
-        {errors.activity && (
-          <span className="text-red-500">
-            This field is required and should be max 50 characters
-          </span>
-        )}
+      <Card>
+        <CardHeader>
+          <CardTitle>IKIGAI</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="activity">What activity do you love doing?</Label>
+            <Input
+              id="activity"
+              {...register("activity", { required: "This field is required" })}
+            />
+            {errors.activity && (
+              <span className="text-red-500 text-sm">
+                {errors.activity.message}
+              </span>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="marketPotential">
+              What is the market potential for this activity?
+            </Label>
+            <Controller
+              name="marketPotential"
+              control={control}
+              rules={{ required: "This field is required" }}
+              render={({ field }) => (
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <SelectTrigger id="marketPotential">
+                    <SelectValue placeholder="Select market potential" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.marketPotential && (
+              <span className="text-red-500 text-sm">
+                {errors.marketPotential.message}
+              </span>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="skillLevel">
+              What is your skill level in this activity?
+            </Label>
+            <Controller
+              name="skillLevel"
+              control={control}
+              rules={{ required: "This field is required" }}
+              render={({ field }) => (
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <SelectTrigger id="skillLevel">
+                    <SelectValue placeholder="Select skill level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="expert">Expert</SelectItem>
+                    <SelectItem value="intermediate">Intermediate</SelectItem>
+                    <SelectItem value="beginner">Beginner</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.skillLevel && (
+              <span className="text-red-500 text-sm">
+                {errors.skillLevel.message}
+              </span>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="payPotential">
+              What is the pay potential for this activity?
+            </Label>
+            <Controller
+              name="payPotential"
+              control={control}
+              rules={{ required: "This field is required" }}
+              render={({ field }) => (
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <SelectTrigger id="payPotential">
+                    <SelectValue placeholder="Select pay potential" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.payPotential && (
+              <span className="text-red-500 text-sm">
+                {errors.payPotential.message}
+              </span>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-between">
+        <Button
+          type="button"
+          onClick={onPrevious}
+          variant="outline"
+          disabled={isLoading}
+        >
+          Previous
+        </Button>
+
+        <Button type="submit" disabled={isLoading || (!isDirty && !isValid)}>
+          {isLoading ? "Submitting..." : "Next"}
+        </Button>
       </div>
-      <div>
-        <Label htmlFor="marketPotential">
-          Is this activity needed or sought after in the market?
-        </Label>
-        <Controller
-          name="marketPotential"
-          control={control}
-          rules={{ required: true }}
-          render={({ field }) => (
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select market potential" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="yes">
-                  Yes, this activity has commercial and leisurely potential.
-                </SelectItem>
-                <SelectItem value="no">
-                  No, this activity only has personal value.
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          )}
-        />
-        {errors.marketPotential && (
-          <span className="text-red-500">This field is required</span>
-        )}
-      </div>
-      <div>
-        <Label htmlFor="skillLevel">
-          How much would you rate your skill at this activity?
-        </Label>
-        <Controller
-          name="skillLevel"
-          control={control}
-          rules={{ required: true }}
-          render={({ field }) => (
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select skill level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="veryGood">
-                  I am very good at this.
-                </SelectItem>
-                <SelectItem value="moderatelyGood">
-                  I am moderately good at this.
-                </SelectItem>
-                <SelectItem value="learning">
-                  I am still learning it.
-                </SelectItem>
-                <SelectItem value="notGood">I am not good at it.</SelectItem>
-              </SelectContent>
-            </Select>
-          )}
-        />
-        {errors.skillLevel && (
-          <span className="text-red-500">This field is required</span>
-        )}
-      </div>
-      <div>
-        <Label htmlFor="payPotential">
-          Is this activity well paid for in the market?
-        </Label>
-        <Controller
-          name="payPotential"
-          control={control}
-          rules={{ required: true }}
-          render={({ field }) => (
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select pay potential" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="noPotential">
-                  It does not have any pay potential.
-                </SelectItem>
-                <SelectItem value="moderatePay">
-                  It is moderately paid.
-                </SelectItem>
-                <SelectItem value="highPay">It is highly paid.</SelectItem>
-              </SelectContent>
-            </Select>
-          )}
-        />
-        {errors.payPotential && (
-          <span className="text-red-500">This field is required</span>
-        )}
-      </div>
-      <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? "Saving..." : "Save and Continue"}
-      </Button>
     </form>
   );
 }

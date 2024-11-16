@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import { useForm, Controller } from "react-hook-form";
@@ -23,21 +25,26 @@ export interface FinancialProfileFormData {
 
 interface FinancialProfileProps {
   onSubmit: (data: any) => void;
+  onPrevious: () => void;
   isLoading: boolean;
   initialData?: any;
+  isRequired: boolean;
 }
 
-export default function FinancialProfile({
+export default function FinancialProfileProps({
   onSubmit,
+  onPrevious,
   isLoading,
   initialData,
+  isRequired,
 }: FinancialProfileProps) {
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid, isDirty },
   } = useForm<FinancialProfileFormData>({
     defaultValues: initialData,
+    mode: "onChange",
   });
 
   const renderError = (error?: { message?: string }) =>
@@ -61,10 +68,7 @@ export default function FinancialProfile({
               control={control}
               rules={{ required: "Income growth is required" }}
               render={({ field }) => (
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger id="incomeGrowth">
                     <SelectValue placeholder="Select income growth" />
                   </SelectTrigger>
@@ -88,10 +92,7 @@ export default function FinancialProfile({
               control={control}
               rules={{ required: "This field is required" }}
               render={({ field }) => (
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger id="primaryDecisionMaker">
                     <SelectValue placeholder="Select an option" />
                   </SelectTrigger>
@@ -117,10 +118,7 @@ export default function FinancialProfile({
               control={control}
               rules={{ required: "Contingency fund information is required" }}
               render={({ field }) => (
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger id="contingencyFund">
                     <SelectValue placeholder="Select contingency fund amount" />
                   </SelectTrigger>
@@ -166,9 +164,23 @@ export default function FinancialProfile({
             {renderError(errors.monthlyExpenditure)}
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Saving..." : "Save and Continue"}
-          </Button>
+          <div className="flex justify-between">
+            <Button
+              type="button"
+              onClick={onPrevious}
+              variant={"outline"}
+              disabled={isLoading}
+            >
+              Previous
+            </Button>
+            <Button
+              type="submit"
+              disabled={isLoading || (!isDirty && !isValid)}
+              // className="ml-auto"
+            >
+              {isLoading ? "Submitting..." : "Next"}
+            </Button>
+          </div>
         </form>
       </CardContent>
     </Card>

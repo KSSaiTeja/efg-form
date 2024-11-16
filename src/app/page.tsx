@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import { useState } from "react";
@@ -10,6 +12,7 @@ import Goals from "./goals";
 import AssetAnalysis from "./asset-analysis";
 import Ikigai from "./ikigai";
 import SavartOne from "./savart-one";
+import SubmitScreen from "./submit-screen";
 
 const steps = [
   "Personal Profile",
@@ -24,19 +27,53 @@ const steps = [
 type Step = (typeof steps)[number];
 
 type FormData = {
-  [key: string]: unknown;
+  personalprofile?: any;
+  financialprofile?: any;
+  investmentprofile?: any;
+  goals?: any;
+  assetanalysis?: any;
+  ikigai?: any;
+  savartone?: any;
 };
 
 export default function Home() {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [formData, setFormData] = useState<FormData>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleNext = (data: unknown) => {
-    setFormData((prev) => ({
-      ...prev,
+  const handleNext = async (data: unknown) => {
+    const updatedFormData = {
+      ...formData,
       [steps[currentStep].toLowerCase().replace(" ", "")]: data,
-    }));
-    setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
+    };
+    setFormData(updatedFormData);
+
+    if (currentStep === steps.length - 1) {
+      setIsLoading(true);
+      try {
+        const response = await fetch("/api/submit", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedFormData),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to submit form data");
+        }
+
+        setIsSubmitted(true);
+      } catch (error) {
+        console.error("Error submitting form data:", error);
+        // Handle error (e.g., show error message to user)
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      setCurrentStep((prev) => prev + 1);
+    }
   };
 
   const handlePrevious = () => {
@@ -44,11 +81,15 @@ export default function Home() {
   };
 
   const renderStep = () => {
-    const currentStepKey = steps[currentStep].toLowerCase().replace(" ", "");
+    const currentStepKey = steps[currentStep]
+      .toLowerCase()
+      .replace(" ", "") as keyof FormData;
     const commonProps = {
       onSubmit: handleNext,
-      isLoading: false,
+      onPrevious: handlePrevious,
+      isLoading: isLoading,
       initialData: formData[currentStepKey],
+      isRequired: true,
     };
 
     switch (currentStep) {
@@ -70,6 +111,10 @@ export default function Home() {
         return null;
     }
   };
+
+  if (isSubmitted) {
+    return <SubmitScreen formData={formData} />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100 flex flex-col">
@@ -97,18 +142,6 @@ export default function Home() {
           </div>
           <div className="min-h-[60vh] flex items-center justify-center">
             {renderStep()}
-          </div>
-          <div className="mt-8 flex justify-between">
-            <Button
-              onClick={handlePrevious}
-              disabled={currentStep === 0}
-              variant="outline"
-            >
-              Previous
-            </Button>
-            {currentStep === steps.length - 1 && (
-              <Button onClick={() => console.log(formData)}>Submit</Button>
-            )}
           </div>
         </div>
       </main>

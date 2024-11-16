@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import { useForm, useFieldArray, Controller } from "react-hook-form";
@@ -24,48 +25,51 @@ export interface AssetAnalysisFormData {
   realEstate: Array<{
     nature: string;
     location: string;
-    area: number;
-    purchaseValue: number;
-    currentValue: number;
+    area: number | null;
+    purchaseValue: number | null;
+    currentValue: number | null;
   }>;
-  reits: { currentValue: number };
-  goldJewellery: { currentValue: number };
+  reits: { currentValue: number | null };
+  goldJewellery: { currentValue: number | null };
   chitFunds: {
-    monthlyContribution: number;
+    monthlyContribution: number | null;
     tenure: string;
-    chitValue: number;
+    chitValue: number | null;
   };
   listedEquity: {
-    purchaseValue: number;
-    currentValue: number;
+    purchaseValue: number | null;
+    currentValue: number | null;
   };
   mutualFunds: {
-    purchaseValue: number;
-    currentValue: number;
+    purchaseValue: number | null;
+    currentValue: number | null;
   };
   fixedDeposit: {
-    purchaseValue: number;
-    currentValue: number;
+    purchaseValue: number | null;
+    currentValue: number | null;
   };
-  eps: { currentValue: number };
-  nps: { currentValue: number };
-  ulip: { currentValue: number };
-  bondsDebentures: { currentValue: number };
-  alternativeInvestments: { currentValue: number };
-  unsecuredLending: { currentValue: number };
-  privateEquity: { currentValue: number };
-  postalSavings: { currentValue: number };
-  cashEquivalents: { currentValue: number };
+  eps: { currentValue: number | null };
+  nps: { currentValue: number | null };
+  ulip: { currentValue: number | null };
+  bondsDebentures: { currentValue: number | null };
+  alternativeInvestments: { currentValue: number | null };
+  unsecuredLending: { currentValue: number | null };
+  privateEquity: { currentValue: number | null };
+  postalSavings: { currentValue: number | null };
+  cashEquivalents: { currentValue: number | null };
 }
 
 interface AssetAnalysisProps {
   onSubmit: (data: any) => void;
+  onPrevious: () => void;
   isLoading: boolean;
   initialData?: any;
+  isRequired: boolean;
 }
 
 export default function AssetAnalysis({
   onSubmit,
+  onPrevious,
   isLoading,
   initialData,
 }: AssetAnalysisProps) {
@@ -77,47 +81,62 @@ export default function AssetAnalysis({
   } = useForm<AssetAnalysisFormData>({
     defaultValues: initialData || {
       realEstate: [],
-      reits: { currentValue: 0 },
-      goldJewellery: { currentValue: 0 },
-      chitFunds: { monthlyContribution: 0, tenure: "", chitValue: 0 },
-      listedEquity: { purchaseValue: 0, currentValue: 0 },
-      mutualFunds: { purchaseValue: 0, currentValue: 0 },
-      fixedDeposit: { purchaseValue: 0, currentValue: 0 },
-      eps: { currentValue: 0 },
-      nps: { currentValue: 0 },
-      ulip: { currentValue: 0 },
-      bondsDebentures: { currentValue: 0 },
-      alternativeInvestments: { currentValue: 0 },
-      unsecuredLending: { currentValue: 0 },
-      privateEquity: { currentValue: 0 },
-      postalSavings: { currentValue: 0 },
-      cashEquivalents: { currentValue: 0 },
+      reits: { currentValue: null },
+      goldJewellery: { currentValue: null },
+      chitFunds: {
+        monthlyContribution: null,
+        tenure: "",
+        chitValue: null,
+      },
+      listedEquity: { purchaseValue: null, currentValue: null },
+      mutualFunds: { purchaseValue: null, currentValue: null },
+      fixedDeposit: { purchaseValue: null, currentValue: null },
+      eps: { currentValue: null },
+      nps: { currentValue: null },
+      ulip: { currentValue: null },
+      bondsDebentures: { currentValue: null },
+      alternativeInvestments: { currentValue: null },
+      unsecuredLending: { currentValue: null },
+      privateEquity: { currentValue: null },
+      postalSavings: { currentValue: null },
+      cashEquivalents: { currentValue: null },
     },
   });
-  const {
-    fields: realEstateFields,
-    append: appendRealEstate,
-    remove: removeRealEstate,
-  } = useFieldArray({
+
+  const { fields, append, remove } = useFieldArray({
     control,
     name: "realEstate",
   });
 
+  const onSubmitForm = (data: AssetAnalysisFormData) => {
+    Object.keys(data).forEach((key) => {
+      const value = data[key as keyof AssetAnalysisFormData];
+      if (typeof value === "object" && value !== null) {
+        Object.keys(value).forEach((subKey) => {
+          if ((value as any)[subKey] === "") {
+            (value as any)[subKey] = null;
+          }
+        });
+      }
+    });
+    onSubmit(data);
+  };
+
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(onSubmitForm)}
       className="space-y-6 w-full max-w-2xl"
     >
       <Card>
         <CardHeader>
-          <CardTitle>Asset Analysis</CardTitle>
+          <CardTitle>Asset Analysis (Optional)</CardTitle>
         </CardHeader>
         <CardContent>
           <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="realEstate">
+            <AccordionItem value="real-estate">
               <AccordionTrigger>Real Estate</AccordionTrigger>
               <AccordionContent>
-                {realEstateFields.map((field, index) => (
+                {fields.map((field, index) => (
                   <div
                     key={field.id}
                     className="space-y-4 p-4 border rounded mb-4"
@@ -125,11 +144,11 @@ export default function AssetAnalysis({
                     <Controller
                       name={`realEstate.${index}.nature`}
                       control={control}
-                      rules={{ required: true }}
+                      rules={{ required: "Nature of property is required" }}
                       render={({ field }) => (
                         <Select
                           onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          value={field.value}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select nature of property" />
@@ -155,67 +174,82 @@ export default function AssetAnalysis({
                     />
                     {errors.realEstate?.[index]?.nature && (
                       <span className="text-red-500">
-                        This field is required
+                        {errors.realEstate[index]?.nature?.message}
                       </span>
                     )}
 
                     <Input
-                      {...register(`realEstate.${index}.location`, {
-                        required: true,
+                      {...register(`realEstate.${index}.location` as const, {
+                        required: "Location is required",
                       })}
                       placeholder="Location"
                     />
                     {errors.realEstate?.[index]?.location && (
                       <span className="text-red-500">
-                        This field is required
+                        {errors.realEstate[index]?.location?.message}
                       </span>
                     )}
 
                     <Input
-                      {...register(`realEstate.${index}.area`, {
-                        required: true,
-                        min: 0,
+                      {...register(`realEstate.${index}.area` as const, {
+                        setValueAs: (v) => (v === "" ? null : parseFloat(v)),
+                        min: {
+                          value: 0,
+                          message: "Area must be a positive number",
+                        },
                       })}
-                      placeholder="Area (sq.ft)"
+                      placeholder="Area (in sq. ft.)"
                       type="number"
                     />
                     {errors.realEstate?.[index]?.area && (
                       <span className="text-red-500">
-                        This field is required and must be a positive number
+                        {errors.realEstate[index]?.area?.message}
                       </span>
                     )}
 
                     <Input
-                      {...register(`realEstate.${index}.purchaseValue`, {
-                        required: true,
-                        min: 0,
-                      })}
+                      {...register(
+                        `realEstate.${index}.purchaseValue` as const,
+                        {
+                          setValueAs: (v) => (v === "" ? null : parseFloat(v)),
+                          min: {
+                            value: 0,
+                            message: "Purchase value must be a positive number",
+                          },
+                        },
+                      )}
                       placeholder="Purchase Value"
                       type="number"
                     />
                     {errors.realEstate?.[index]?.purchaseValue && (
                       <span className="text-red-500">
-                        This field is required and must be a positive number
+                        {errors.realEstate[index]?.purchaseValue?.message}
                       </span>
                     )}
 
                     <Input
-                      {...register(`realEstate.${index}.currentValue`, {
-                        required: true,
-                        min: 0,
-                      })}
+                      {...register(
+                        `realEstate.${index}.currentValue` as const,
+                        {
+                          setValueAs: (v) => (v === "" ? null : parseFloat(v)),
+                          min: {
+                            value: 0,
+                            message: "Current value must be a positive number",
+                          },
+                        },
+                      )}
                       placeholder="Current Value"
                       type="number"
                     />
                     {errors.realEstate?.[index]?.currentValue && (
                       <span className="text-red-500">
-                        This field is required and must be a positive number
+                        {errors.realEstate[index]?.currentValue?.message}
                       </span>
                     )}
 
                     <Button
                       type="button"
-                      onClick={() => removeRealEstate(index)}
+                      onClick={() => remove(index)}
                       variant="destructive"
                     >
                       Remove Property
@@ -225,12 +259,12 @@ export default function AssetAnalysis({
                 <Button
                   type="button"
                   onClick={() =>
-                    appendRealEstate({
+                    append({
                       nature: "",
                       location: "",
-                      area: 0,
-                      purchaseValue: 0,
-                      currentValue: 0,
+                      area: null,
+                      purchaseValue: null,
+                      currentValue: null,
                     })
                   }
                 >
@@ -242,214 +276,249 @@ export default function AssetAnalysis({
             <AccordionItem value="reits">
               <AccordionTrigger>REITs</AccordionTrigger>
               <AccordionContent>
-                <div className="space-y-4">
-                  <Label htmlFor="reits.currentValue">Current Value</Label>
-                  <Input
-                    {...register("reits.currentValue", {
-                      required: true,
-                      min: 0,
-                    })}
-                    type="number"
-                    id="reits.currentValue"
-                  />
-                  {errors.reits?.currentValue && (
-                    <span className="text-red-500">
-                      This field is required and must be a positive number
-                    </span>
-                  )}
-                </div>
+                <Label htmlFor="reits-current-value">Current Value</Label>
+                <Input
+                  id="reits-current-value"
+                  {...register("reits.currentValue", {
+                    setValueAs: (v) => (v === "" ? null : parseFloat(v)),
+                    min: {
+                      value: 0,
+                      message: "Current value must be a positive number",
+                    },
+                  })}
+                  placeholder="Current Value"
+                  type="number"
+                />
+                {errors.reits?.currentValue && (
+                  <span className="text-red-500">
+                    {errors.reits.currentValue.message}
+                  </span>
+                )}
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="goldJewellery">
-              <AccordionTrigger>Gold/Jewellery</AccordionTrigger>
+            <AccordionItem value="gold-jewellery">
+              <AccordionTrigger>Gold & Jewellery</AccordionTrigger>
               <AccordionContent>
-                <div className="space-y-4">
-                  <Label htmlFor="goldJewellery.currentValue">
-                    Current Value
-                  </Label>
-                  <Input
-                    {...register("goldJewellery.currentValue", {
-                      required: true,
-                      min: 0,
-                    })}
-                    type="number"
-                    id="goldJewellery.currentValue"
-                  />
-                  {errors.goldJewellery?.currentValue && (
-                    <span className="text-red-500">
-                      This field is required and must be a positive number
-                    </span>
-                  )}
-                </div>
+                <Label htmlFor="gold-jewellery-current-value">
+                  Current Value
+                </Label>
+                <Input
+                  id="gold-jewellery-current-value"
+                  {...register("goldJewellery.currentValue", {
+                    setValueAs: (v) => (v === "" ? null : parseFloat(v)),
+                    min: {
+                      value: 0,
+                      message: "Current value must be a positive number",
+                    },
+                  })}
+                  placeholder="Current Value"
+                  type="number"
+                />
+                {errors.goldJewellery?.currentValue && (
+                  <span className="text-red-500">
+                    {errors.goldJewellery.currentValue.message}
+                  </span>
+                )}
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="chitFunds">
+            <AccordionItem value="chit-funds">
               <AccordionTrigger>Chit Funds</AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-4">
-                  <Label htmlFor="chitFunds.monthlyContribution">
+                  <Label htmlFor="chit-funds-monthly-contribution">
                     Monthly Contribution
                   </Label>
                   <Input
+                    id="chit-funds-monthly-contribution"
                     {...register("chitFunds.monthlyContribution", {
-                      required: true,
-                      min: 0,
+                      setValueAs: (v) => (v === "" ? null : parseFloat(v)),
+                      min: {
+                        value: 0,
+                        message:
+                          "Monthly contribution must be a positive number",
+                      },
                     })}
+                    placeholder="Monthly Contribution"
                     type="number"
-                    id="chitFunds.monthlyContribution"
                   />
                   {errors.chitFunds?.monthlyContribution && (
                     <span className="text-red-500">
-                      This field is required and must be a positive number
+                      {errors.chitFunds.monthlyContribution.message}
                     </span>
                   )}
 
-                  <Label htmlFor="chitFunds.tenure">Tenure</Label>
+                  <Label htmlFor="chit-funds-tenure">Tenure</Label>
                   <Input
-                    {...register("chitFunds.tenure", { required: true })}
-                    id="chitFunds.tenure"
+                    id="chit-funds-tenure"
+                    {...register("chitFunds.tenure")}
+                    placeholder="Tenure"
                   />
-                  {errors.chitFunds?.tenure && (
-                    <span className="text-red-500">This field is required</span>
-                  )}
 
-                  <Label htmlFor="chitFunds.chitValue">Chit Value</Label>
+                  <Label htmlFor="chit-funds-chit-value">Chit Value</Label>
                   <Input
+                    id="chit-funds-chit-value"
                     {...register("chitFunds.chitValue", {
-                      required: true,
-                      min: 0,
+                      setValueAs: (v) => (v === "" ? null : parseFloat(v)),
+                      min: {
+                        value: 0,
+                        message: "Chit value must be a positive number",
+                      },
                     })}
+                    placeholder="Chit Value"
                     type="number"
-                    id="chitFunds.chitValue"
                   />
                   {errors.chitFunds?.chitValue && (
                     <span className="text-red-500">
-                      This field is required and must be a positive number
+                      {errors.chitFunds.chitValue.message}
                     </span>
                   )}
                 </div>
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="listedEquity">
+            <AccordionItem value="listed-equity">
               <AccordionTrigger>Listed Equity</AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-4">
-                  <Label htmlFor="listedEquity.purchaseValue">
+                  <Label htmlFor="listed-equity-purchase-value">
                     Purchase Value
                   </Label>
                   <Input
+                    id="listed-equity-purchase-value"
                     {...register("listedEquity.purchaseValue", {
-                      required: true,
-                      min: 0,
+                      setValueAs: (v) => (v === "" ? null : parseFloat(v)),
+                      min: {
+                        value: 0,
+                        message: "Purchase value must be a positive number",
+                      },
                     })}
+                    placeholder="Purchase Value"
                     type="number"
-                    id="listedEquity.purchaseValue"
                   />
                   {errors.listedEquity?.purchaseValue && (
                     <span className="text-red-500">
-                      This field is required and must be a positive number
+                      {errors.listedEquity.purchaseValue.message}
                     </span>
                   )}
 
-                  <Label htmlFor="listedEquity.currentValue">
+                  <Label htmlFor="listed-equity-current-value">
                     Current Value
                   </Label>
                   <Input
+                    id="listed-equity-current-value"
                     {...register("listedEquity.currentValue", {
-                      required: true,
-                      min: 0,
+                      setValueAs: (v) => (v === "" ? null : parseFloat(v)),
+                      min: {
+                        value: 0,
+                        message: "Current value must be a positive number",
+                      },
                     })}
+                    placeholder="Current Value"
                     type="number"
-                    id="listedEquity.currentValue"
                   />
                   {errors.listedEquity?.currentValue && (
                     <span className="text-red-500">
-                      This field is required and must be a positive number
+                      {errors.listedEquity.currentValue.message}
                     </span>
                   )}
                 </div>
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="mutualFunds">
+            <AccordionItem value="mutual-funds">
               <AccordionTrigger>Mutual Funds</AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-4">
-                  <Label htmlFor="mutualFunds.purchaseValue">
+                  <Label htmlFor="mutual-funds-purchase-value">
                     Purchase Value
                   </Label>
                   <Input
+                    id="mutual-funds-purchase-value"
                     {...register("mutualFunds.purchaseValue", {
-                      required: true,
-                      min: 0,
+                      setValueAs: (v) => (v === "" ? null : parseFloat(v)),
+                      min: {
+                        value: 0,
+                        message: "Purchase value must be a positive number",
+                      },
                     })}
+                    placeholder="Purchase Value"
                     type="number"
-                    id="mutualFunds.purchaseValue"
                   />
                   {errors.mutualFunds?.purchaseValue && (
                     <span className="text-red-500">
-                      This field is required and must be a positive number
+                      {errors.mutualFunds.purchaseValue.message}
                     </span>
                   )}
 
-                  <Label htmlFor="mutualFunds.currentValue">
+                  <Label htmlFor="mutual-funds-current-value">
                     Current Value
                   </Label>
                   <Input
+                    id="mutual-funds-current-value"
                     {...register("mutualFunds.currentValue", {
-                      required: true,
-                      min: 0,
+                      setValueAs: (v) => (v === "" ? null : parseFloat(v)),
+                      min: {
+                        value: 0,
+                        message: "Current value must be a positive number",
+                      },
                     })}
+                    placeholder="Current Value"
                     type="number"
-                    id="mutualFunds.currentValue"
                   />
                   {errors.mutualFunds?.currentValue && (
                     <span className="text-red-500">
-                      This field is required and must be a positive number
+                      {errors.mutualFunds.currentValue.message}
                     </span>
                   )}
                 </div>
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="fixedDeposit">
+            <AccordionItem value="fixed-deposit">
               <AccordionTrigger>Fixed Deposit</AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-4">
-                  <Label htmlFor="fixedDeposit.purchaseValue">
+                  <Label htmlFor="fixed-deposit-purchase-value">
                     Purchase Value
                   </Label>
                   <Input
+                    id="fixed-deposit-purchase-value"
                     {...register("fixedDeposit.purchaseValue", {
-                      required: true,
-                      min: 0,
+                      setValueAs: (v) => (v === "" ? null : parseFloat(v)),
+                      min: {
+                        value: 0,
+                        message: "Purchase value must be a positive number",
+                      },
                     })}
+                    placeholder="Purchase Value"
                     type="number"
-                    id="fixedDeposit.purchaseValue"
                   />
                   {errors.fixedDeposit?.purchaseValue && (
                     <span className="text-red-500">
-                      This field is required and must be a positive number
+                      {errors.fixedDeposit.purchaseValue.message}
                     </span>
                   )}
 
-                  <Label htmlFor="fixedDeposit.currentValue">
+                  <Label htmlFor="fixed-deposit-current-value">
                     Current Value
                   </Label>
                   <Input
+                    id="fixed-deposit-current-value"
                     {...register("fixedDeposit.currentValue", {
-                      required: true,
-                      min: 0,
+                      setValueAs: (v) => (v === "" ? null : parseFloat(v)),
+                      min: {
+                        value: 0,
+                        message: "Current value must be a positive number",
+                      },
                     })}
+                    placeholder="Current Value"
                     type="number"
-                    id="fixedDeposit.currentValue"
                   />
                   {errors.fixedDeposit?.currentValue && (
                     <span className="text-red-500">
-                      This field is required and must be a positive number
+                      {errors.fixedDeposit.currentValue.message}
                     </span>
                   )}
                 </div>
@@ -459,219 +528,242 @@ export default function AssetAnalysis({
             <AccordionItem value="eps">
               <AccordionTrigger>EPS</AccordionTrigger>
               <AccordionContent>
-                <div className="space-y-4">
-                  <Label htmlFor="eps.currentValue">Current Value</Label>
-                  <Input
-                    {...register("eps.currentValue", {
-                      required: true,
-                      min: 0,
-                    })}
-                    type="number"
-                    id="eps.currentValue"
-                  />
-                  {errors.eps?.currentValue && (
-                    <span className="text-red-500">
-                      This field is required and must be a positive number
-                    </span>
-                  )}
-                </div>
+                <Label htmlFor="eps-current-value">Current Value</Label>
+                <Input
+                  id="eps-current-value"
+                  {...register("eps.currentValue", {
+                    setValueAs: (v) => (v === "" ? null : parseFloat(v)),
+                    min: {
+                      value: 0,
+                      message: "Current value must be a positive number",
+                    },
+                  })}
+                  placeholder="Current Value"
+                  type="number"
+                />
+                {errors.eps?.currentValue && (
+                  <span className="text-red-500">
+                    {errors.eps.currentValue.message}
+                  </span>
+                )}
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="nps">
               <AccordionTrigger>NPS</AccordionTrigger>
               <AccordionContent>
-                <div className="space-y-4">
-                  <Label htmlFor="nps.currentValue">Current Value</Label>
-                  <Input
-                    {...register("nps.currentValue", {
-                      required: true,
-                      min: 0,
-                    })}
-                    type="number"
-                    id="nps.currentValue"
-                  />
-                  {errors.nps?.currentValue && (
-                    <span className="text-red-500">
-                      This field is required and must be a positive number
-                    </span>
-                  )}
-                </div>
+                <Label htmlFor="nps-current-value">Current Value</Label>
+                <Input
+                  id="nps-current-value"
+                  {...register("nps.currentValue", {
+                    setValueAs: (v) => (v === "" ? null : parseFloat(v)),
+                    min: {
+                      value: 0,
+                      message: "Current value must be a positive number",
+                    },
+                  })}
+                  placeholder="Current Value"
+                  type="number"
+                />
+                {errors.nps?.currentValue && (
+                  <span className="text-red-500">
+                    {errors.nps.currentValue.message}
+                  </span>
+                )}
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="ulip">
               <AccordionTrigger>ULIP</AccordionTrigger>
               <AccordionContent>
-                <div className="space-y-4">
-                  <Label htmlFor="ulip.currentValue">Current Value</Label>
-                  <Input
-                    {...register("ulip.currentValue", {
-                      required: true,
-                      min: 0,
-                    })}
-                    type="number"
-                    id="ulip.currentValue"
-                  />
-                  {errors.ulip?.currentValue && (
-                    <span className="text-red-500">
-                      This field is required and must be a positive number
-                    </span>
-                  )}
-                </div>
+                <Label htmlFor="ulip-current-value">Current Value</Label>
+                <Input
+                  id="ulip-current-value"
+                  {...register("ulip.currentValue", {
+                    setValueAs: (v) => (v === "" ? null : parseFloat(v)),
+                    min: {
+                      value: 0,
+                      message: "Current value must be a positive number",
+                    },
+                  })}
+                  placeholder="Current Value"
+                  type="number"
+                />
+                {errors.ulip?.currentValue && (
+                  <span className="text-red-500">
+                    {errors.ulip.currentValue.message}
+                  </span>
+                )}
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="bondsDebentures">
-              <AccordionTrigger>Bonds/Debentures</AccordionTrigger>
+            <AccordionItem value="bonds-debentures">
+              <AccordionTrigger>Bonds & Debentures</AccordionTrigger>
               <AccordionContent>
-                <div className="space-y-4">
-                  <Label htmlFor="bondsDebentures.currentValue">
-                    Current Value
-                  </Label>
-                  <Input
-                    {...register("bondsDebentures.currentValue", {
-                      required: true,
-                      min: 0,
-                    })}
-                    type="number"
-                    id="bondsDebentures.currentValue"
-                  />
-                  {errors.bondsDebentures?.currentValue && (
-                    <span className="text-red-500">
-                      This field is required and must be a positive number
-                    </span>
-                  )}
-                </div>
+                <Label htmlFor="bonds-debentures-current-value">
+                  Current Value
+                </Label>
+                <Input
+                  id="bonds-debentures-current-value"
+                  {...register("bondsDebentures.currentValue", {
+                    setValueAs: (v) => (v === "" ? null : parseFloat(v)),
+                    min: {
+                      value: 0,
+                      message: "Current value must be a positive number",
+                    },
+                  })}
+                  placeholder="Current Value"
+                  type="number"
+                />
+                {errors.bondsDebentures?.currentValue && (
+                  <span className="text-red-500">
+                    {errors.bondsDebentures.currentValue.message}
+                  </span>
+                )}
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="alternativeInvestments">
+            <AccordionItem value="alternative-investments">
               <AccordionTrigger>Alternative Investments</AccordionTrigger>
               <AccordionContent>
-                <div className="space-y-4">
-                  <Label htmlFor="alternativeInvestments.currentValue">
-                    Current Value
-                  </Label>
-                  <Input
-                    {...register("alternativeInvestments.currentValue", {
-                      required: true,
-                      min: 0,
-                    })}
-                    type="number"
-                    id="alternativeInvestments.currentValue"
-                  />
-                  {errors.alternativeInvestments?.currentValue && (
-                    <span className="text-red-500">
-                      This field is required and must be a positive number
-                    </span>
-                  )}
-                </div>
+                <Label htmlFor="alternative-investments-current-value">
+                  Current Value
+                </Label>
+                <Input
+                  id="alternative-investments-current-value"
+                  {...register("alternativeInvestments.currentValue", {
+                    setValueAs: (v) => (v === "" ? null : parseFloat(v)),
+                    min: {
+                      value: 0,
+                      message: "Current value must be a positive number",
+                    },
+                  })}
+                  placeholder="Current Value"
+                  type="number"
+                />
+                {errors.alternativeInvestments?.currentValue && (
+                  <span className="text-red-500">
+                    {errors.alternativeInvestments.currentValue.message}
+                  </span>
+                )}
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="unsecuredLending">
+            <AccordionItem value="unsecured-lending">
               <AccordionTrigger>Unsecured Lending</AccordionTrigger>
               <AccordionContent>
-                <div className="space-y-4">
-                  <Label htmlFor="unsecuredLending.currentValue">
-                    Current Value
-                  </Label>
-                  <Input
-                    {...register("unsecuredLending.currentValue", {
-                      required: true,
-                      min: 0,
-                    })}
-                    type="number"
-                    id="unsecuredLending.currentValue"
-                  />
-                  {errors.unsecuredLending?.currentValue && (
-                    <span className="text-red-500">
-                      This field is required and must be a positive number
-                    </span>
-                  )}
-                </div>
+                <Label htmlFor="unsecured-lending-current-value">
+                  Current Value
+                </Label>
+                <Input
+                  id="unsecured-lending-current-value"
+                  {...register("unsecuredLending.currentValue", {
+                    setValueAs: (v) => (v === "" ? null : parseFloat(v)),
+                    min: {
+                      value: 0,
+                      message: "Current value must be a positive number",
+                    },
+                  })}
+                  placeholder="Current Value"
+                  type="number"
+                />
+                {errors.unsecuredLending?.currentValue && (
+                  <span className="text-red-500">
+                    {errors.unsecuredLending.currentValue.message}
+                  </span>
+                )}
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="privateEquity">
+            <AccordionItem value="private-equity">
               <AccordionTrigger>Private Equity</AccordionTrigger>
               <AccordionContent>
-                <div className="space-y-4">
-                  <Label htmlFor="privateEquity.currentValue">
-                    Current Value
-                  </Label>
-                  <Input
-                    {...register("privateEquity.currentValue", {
-                      required: true,
-                      min: 0,
-                    })}
-                    type="number"
-                    id="privateEquity.currentValue"
-                  />
-                  {errors.privateEquity?.currentValue && (
-                    <span className="text-red-500">
-                      This field is required and must be a positive number
-                    </span>
-                  )}
-                </div>
+                <Label htmlFor="private-equity-current-value">
+                  Current Value
+                </Label>
+                <Input
+                  id="private-equity-current-value"
+                  {...register("privateEquity.currentValue", {
+                    setValueAs: (v) => (v === "" ? null : parseFloat(v)),
+                    min: {
+                      value: 0,
+                      message: "Current value must be a positive number",
+                    },
+                  })}
+                  placeholder="Current Value"
+                  type="number"
+                />
+                {errors.privateEquity?.currentValue && (
+                  <span className="text-red-500">
+                    {errors.privateEquity.currentValue.message}
+                  </span>
+                )}
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="postalSavings">
+            <AccordionItem value="postal-savings">
               <AccordionTrigger>Postal Savings</AccordionTrigger>
               <AccordionContent>
-                <div className="space-y-4">
-                  <Label htmlFor="postalSavings.currentValue">
-                    Current Value
-                  </Label>
-                  <Input
-                    {...register("postalSavings.currentValue", {
-                      required: true,
-                      min: 0,
-                    })}
-                    type="number"
-                    id="postalSavings.currentValue"
-                  />
-                  {errors.postalSavings?.currentValue && (
-                    <span className="text-red-500">
-                      This field is required and must be a positive number
-                    </span>
-                  )}
-                </div>
+                <Label htmlFor="postal-savings-current-value">
+                  Current Value
+                </Label>
+                <Input
+                  id="postal-savings-current-value"
+                  {...register("postalSavings.currentValue", {
+                    setValueAs: (v) => (v === "" ? null : parseFloat(v)),
+                    min: {
+                      value: 0,
+                      message: "Current value must be a positive number",
+                    },
+                  })}
+                  placeholder="Current Value"
+                  type="number"
+                />
+                {errors.postalSavings?.currentValue && (
+                  <span className="text-red-500">
+                    {errors.postalSavings.currentValue.message}
+                  </span>
+                )}
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="cashEquivalents">
+            <AccordionItem value="cash-equivalents">
               <AccordionTrigger>Cash Equivalents</AccordionTrigger>
               <AccordionContent>
-                <div className="space-y-4">
-                  <Label htmlFor="cashEquivalents.currentValue">
-                    Current Value
-                  </Label>
-                  <Input
-                    {...register("cashEquivalents.currentValue", {
-                      required: true,
-                      min: 0,
-                    })}
-                    type="number"
-                    id="cashEquivalents.currentValue"
-                  />
-                  {errors.cashEquivalents?.currentValue && (
-                    <span className="text-red-500">
-                      This field is required and must be a positive number
-                    </span>
-                  )}
-                </div>
+                <Label htmlFor="cash-equivalents-current-value">
+                  Current Value
+                </Label>
+                <Input
+                  id="cash-equivalents-current-value"
+                  {...register("cashEquivalents.currentValue", {
+                    setValueAs: (v) => (v === "" ? null : parseFloat(v)),
+                    min: {
+                      value: 0,
+                      message: "Current value must be a positive number",
+                    },
+                  })}
+                  placeholder="Current Value"
+                  type="number"
+                />
+                {errors.cashEquivalents?.currentValue && (
+                  <span className="text-red-500">
+                    {errors.cashEquivalents.currentValue.message}
+                  </span>
+                )}
               </AccordionContent>
             </AccordionItem>
           </Accordion>
         </CardContent>
       </Card>
 
-      <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? "Saving..." : "Save and Continue"}
-      </Button>
+      <div className="flex justify-between">
+        <Button type="button" onClick={onPrevious} variant="outline">
+          Previous
+        </Button>
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? "Submitting..." : "Next"}
+        </Button>
+      </div>
     </form>
   );
 }
